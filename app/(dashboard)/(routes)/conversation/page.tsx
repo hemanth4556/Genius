@@ -6,7 +6,7 @@ import { MessageSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChatCompletionRequestMessage } from "openai";
+import ChatCompletionRequestMessage from "openai";
 
 import { Heading } from "@/components/heading";
 import { Button } from "@/components/ui/button";
@@ -32,11 +32,25 @@ const ConversationPage = () => {
     }
   });
 
+
+
+  interface ChatCompletionRequestMessage {
+    content: string;
+  }
+  
+  // Extend the type to include the 'role' property
+  interface ExtendedChatCompletionRequestMessage extends ChatCompletionRequestMessage {
+    role: string;
+  }
+
+
+
+
   const isLoading = form.formState.isSubmitting;
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: ChatCompletionRequestMessage = { role: "user", content: values.prompt };
+      const userMessage: ExtendedChatCompletionRequestMessage = { role: "user", content: values.prompt };
       const newMessages = [...messages, userMessage];
       
       const response = await axios.post('/api/conversation', { messages: newMessages });
@@ -113,10 +127,10 @@ const ConversationPage = () => {
                 key={message.content} 
                 className={cn(
                   "p-8 w-full flex items-start gap-x-8 rounded-lg",
-                  message.role === "user" ? "bg-white border border-black/10" : "bg-muted",
+                  (message as ExtendedChatCompletionRequestMessage).role === "user" ? "bg-white border border-black/10" : "bg-muted",
                 )}
               >
-                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
+                {(message as ExtendedChatCompletionRequestMessage).role === "user" ? <UserAvatar /> : <BotAvatar />}
                 <p className="text-sm">
                   {message.content}
                 </p>
